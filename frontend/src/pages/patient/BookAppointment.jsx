@@ -172,7 +172,7 @@ const BookAppointment = () => {
                     <label>Select Doctor</label>
                     <select value={selectedDoc} onChange={e => setSelectedDoc(e.target.value)}>
                         <option value="" disabled>-- Choose a Doctor --</option>
-                        {doctors.map(d => <option key={d.uid} value={d.uid}>Dr. {d.name} ({d.specialty || 'General'})</option>)}
+                        {doctors.map(d => <option key={d.uid} value={d.uid}>Dr. {d.name}{d.specialty ? ` (${d.specialty})` : ''}</option>)}
                     </select>
                 </div>
 
