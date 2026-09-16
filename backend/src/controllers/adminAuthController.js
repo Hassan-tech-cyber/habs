@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const prisma = require('../config/prisma');
+const User = require('../models/User');
 const { doctorSchema, adminSchema } = require('../utils/validation');
 const { sendWelcomeEmail } = require('../utils/mailer');
 
@@ -10,15 +10,13 @@ const createUserAccount = async (req, res, role, schema) => {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email: value.email }
-        });
+        const existingUser = await User.findOne({ email: value.email });
 
         if (existingUser) {
             return res.status(400).json({ error: 'Email already exists' });
         }
 
-        // Hashing the temporary password
+        
         const passwordHash = await bcrypt.hash(value.password, 10);
         
         const userData = {
@@ -29,25 +27,20 @@ const createUserAccount = async (req, res, role, schema) => {
             passwordHash
         };
 
-        // Add doctor-specific fields if applicable
+        
         if (role === 'doctor') {
             userData.departmentId = value.departmentId;
-            userData.specialty = value.specialty;
-            userData.consultationFee = value.consultationFee;
+            userData.specialization = value.specialty; 
             userData.isActive = true;
-            userData.workingHours = {}; // Default empty, doctor sets this later
-            userData.slotDurationMinutes = 30; // Default
+            userData.workingHours = {}; 
         }
 
-        const newUser = await prisma.user.create({
-            data: userData
-        });
+        const newUser = await User.create(userData);
 
-        // Send email (non-blocking)
+        
         sendWelcomeEmail(value.email, value.name, role, value.password);
 
-        const createdUser = { ...newUser, uid: newUser.id };
-        delete createdUser.passwordHash;
+        const createdUser = { ...newUser.toJSON(), uid: newUser._id };
 
         res.status(201).json({ message: `${role} created successfully`, user: createdUser });
     } catch (error) {

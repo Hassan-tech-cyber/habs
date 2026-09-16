@@ -5,14 +5,14 @@ const { verifyToken, requireRole } = require('../middlewares/auth');
 
 router.use(verifyToken);
 
-// Common for retrieving appointments (handled internally by role)
-router.get('/', requireRole(['patient', 'doctor', 'admin']), getAppointments);
 
-// Patient only routes
-router.post('/', requireRole(['patient']), bookAppointment);
-router.post('/:id/pay', requireRole(['patient']), payForAppointment);
+router.get('/', requireRole(['patient', 'doctor', 'admin', 'system_admin']), getAppointments);
 
-// Cancel an appointment (accessible by patient, doctor, and admin based on logic inside controller)
-router.put('/:id/cancel', requireRole(['patient', 'doctor', 'admin']), cancelAppointment);
+
+router.post('/', requireRole(['patient', 'admin', 'system_admin']), bookAppointment);
+router.post('/:id/pay', requireRole(['patient', 'admin', 'system_admin']), payForAppointment);
+
+
+router.put('/:id/cancel', requireRole(['patient', 'doctor', 'admin', 'system_admin']), cancelAppointment);
 
 module.exports = router;

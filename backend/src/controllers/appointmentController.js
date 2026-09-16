@@ -1,6 +1,7 @@
-const prisma = require('../config/prisma');
+const Appointment = require('../models/Appointment');
+const User = require('../models/User');
 const { appointmentBookingSchema, paymentSchema } = require('../utils/validation');
-const { sendAppointmentConfirmation } = require('../utils/mailer');
+const { sendAppointmentConfirmation, sendAppointmentCancellation } = require('../utils/mailer');
 
 const bookAppointment = async (req, res) => {
     try {
@@ -10,31 +11,32 @@ const bookAppointment = async (req, res) => {
         const { doctorId, date, slotTime } = value;
         const patientId = req.user.uid;
 
-        // Check if the slot is already booked (prevent double booking)
-        const existingAppt = await prisma.appointment.findFirst({
-            where: {
-                doctorId,
-                date,
-                slotTime,
-                status: {
-                    in: ['pending_payment', 'confirmed']
-                }
-            }
+        
+        const existingAppt = await Appointment.findOne({
+            doctorId,
+            date,
+            slotTime,
+            status: { $in: ['pending_payment', 'confirmed'] }
         });
 
         if (existingAppt) {
             return res.status(400).json({ error: 'This slot is already booked.' });
         }
 
-        // Create appointment
-        const newAppt = await prisma.appointment.create({
-            data: {
-                patientId,
-                doctorId,
-                date,
-                slotTime,
-                status: 'pending_payment'
-            }
+        
+        const doctor = await User.findById(doctorId);
+        if (!doctor || doctor.role !== 'doctor') {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+
+        
+        const newAppt = await Appointment.create({
+            patientId,
+            doctorId,
+            departmentId: doctor.departmentId,
+            date,
+            slotTime,
+            status: 'pending_payment'
         });
         
         res.status(201).json({ message: 'Appointment booked (pending payment)', appointment: newAppt });
@@ -50,13 +52,13 @@ const payForAppointment = async (req, res) => {
         const { error, value } = paymentSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        const appt = await prisma.appointment.findUnique({ where: { id } });
+        const appt = await Appointment.findById(id).populate('patientId').populate('doctorId');
 
         if (!appt) {
             return res.status(404).json({ error: 'Appointment not found' });
         }
 
-        if (appt.patientId !== req.user.uid) {
+        if (appt.patientId._id.toString() !== req.user.uid) {
             return res.status(403).json({ error: 'Forbidden: You do not own this appointment' });
         }
 
@@ -64,38 +66,24 @@ const payForAppointment = async (req, res) => {
             return res.status(400).json({ error: 'Appointment is not pending payment' });
         }
 
-        const updates = {
-            status: 'confirmed',
-            paymentMethod: value.paymentMethod,
-            paidAt: new Date()
-        };
+        appt.status = 'confirmed';
+        appt.paymentMethod = value.paymentMethod;
+        appt.paidAt = new Date();
         
         if (value.reference) {
-            updates.paymentReference = value.reference;
+            appt.paymentReference = value.reference;
         }
 
-        const updatedAppt = await prisma.appointment.update({
-            where: { id },
-            data: updates,
-            include: {
-                patient: true,
-                doctor: true
-            }
-        });
+        await appt.save();
 
-        // Fetch patient and doctor emails from the included relations
+        
         try {
-            await sendAppointmentConfirmation(updatedAppt.patient, updatedAppt.doctor, updatedAppt);
+            await sendAppointmentConfirmation(appt.patientId, appt.doctorId, appt.date, appt.slotTime);
         } catch (emailErr) {
             console.error('Email failed to send, but appointment confirmed:', emailErr);
         }
-        
-        // Remove sensitive info before returning
-        const safeAppt = { ...updatedAppt };
-        delete safeAppt.patient.passwordHash;
-        delete safeAppt.doctor.passwordHash;
 
-        res.status(200).json({ message: 'Payment successful, appointment confirmed', appointment: safeAppt });
+        res.status(200).json({ message: 'Payment successful, appointment confirmed', appointment: appt });
     } catch (error) {
         console.error('Error processing payment:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -114,27 +102,26 @@ const getAppointments = async (req, res) => {
         } else if (role === 'doctor') {
             whereClause.doctorId = uid;
         } else {
-            if (role !== 'admin') {
+            if (role !== 'admin' && role !== 'system_admin') {
                 return res.status(403).json({ error: 'Forbidden' });
             }
         }
 
-        // Use Prisma's include to automatically fetch patient details if doctor or admin
-        const includeConfig = (role === 'doctor' || role === 'admin') ? { patient: true } : {};
+        let query = Appointment.find(whereClause).sort({ date: 1, slotTime: 1 });
 
-        const appointments = await prisma.appointment.findMany({
-            where: whereClause,
-            include: includeConfig,
-            orderBy: [
-                { date: 'asc' },
-                { slotTime: 'asc' }
-            ]
-        });
+        if (role === 'doctor' || role === 'admin' || role === 'system_admin') {
+            query = query.populate('patientId');
+        }
 
-        // Format for frontend if patient data is included
-        const enriched = appointments.map(appt => {
-            if (appt.patient) {
-                const pd = appt.patient;
+        const appointments = await query.exec();
+
+        
+        const enriched = appointments.map(apptDoc => {
+            const appt = apptDoc.toJSON();
+            appt.id = apptDoc._id; 
+
+            if (appt.patientId && typeof appt.patientId === 'object') {
+                const pd = appt.patientId;
                 const formatted = {
                     ...appt,
                     patientName: pd.name || 'Unknown',
@@ -146,7 +133,7 @@ const getAppointments = async (req, res) => {
                     chronicConditions: pd.chronicConditions || 'None',
                     currentMedications: pd.currentMedications || 'None'
                 };
-                delete formatted.patient; // Keep flat structure for existing frontend
+                delete formatted.patientId; 
                 return formatted;
             }
             return appt;
@@ -162,14 +149,14 @@ const getAppointments = async (req, res) => {
 const cancelAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const appt = await prisma.appointment.findUnique({ where: { id } });
+        const appt = await Appointment.findById(id).populate('patientId', 'name email').populate('doctorId', 'name email');
 
         if (!appt) {
             return res.status(404).json({ error: 'Appointment not found' });
         }
         
-        // Ensure only the patient, doctor, or an admin can cancel it
-        if (appt.patientId !== req.user.uid && appt.doctorId !== req.user.uid && req.user.role !== 'admin') {
+        
+        if (appt.patientId._id.toString() !== req.user.uid && appt.doctorId._id.toString() !== req.user.uid && req.user.role !== 'admin' && req.user.role !== 'system_admin') {
             return res.status(403).json({ error: 'Forbidden: You do not have permission to cancel this appointment' });
         }
 
@@ -177,15 +164,20 @@ const cancelAppointment = async (req, res) => {
             return res.status(400).json({ error: `Appointment is already ${appt.status}` });
         }
 
-        // Just delete if it's pending payment, otherwise mark as cancelled to keep history
+        
         if (appt.status === 'pending_payment') {
-            await prisma.appointment.delete({ where: { id } });
+            await Appointment.findByIdAndDelete(id);
             res.status(200).json({ message: 'Appointment payment cancelled and slot freed.' });
         } else {
-            await prisma.appointment.update({ 
-                where: { id },
-                data: { status: 'cancelled' } 
-            });
+            appt.status = 'cancelled';
+            await appt.save();
+            
+            try {
+                await sendAppointmentCancellation(appt.patientId, appt.doctorId, appt.date, appt.slotTime);
+            } catch (emailErr) {
+                console.error('Failed to send cancellation email:', emailErr);
+            }
+
             res.status(200).json({ message: 'Appointment cancelled successfully.' });
         }
     } catch (error) {

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const apiFetch = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
@@ -22,8 +22,8 @@ export const apiFetch = async (endpoint, options = {}) => {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            if (response.status === 401) {
-                // Token expired or invalid
+            if (response.status === 401 && endpoint !== '/auth/login') {
+                
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 window.location.href = '/login';

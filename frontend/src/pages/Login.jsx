@@ -25,7 +25,11 @@ const Login = () => {
             });
 
             login(data.token, data.user);
-            navigate(`/${data.user.role}-dashboard`);
+            if (data.user.role === 'system_admin') {
+                navigate('/admin-dashboard');
+            } else {
+                navigate(`/${data.user.role}-dashboard`);
+            }
         } catch (err) {
             setError(err.message);
         } finally {

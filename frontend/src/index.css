@@ -1,13 +1,10 @@
 :root {
-  --primary-color: #003152; /* Brand Dark Blue */
-  --primary-hover: #00223a;
-  --secondary-color: #ffffff; /* White */
-  --text-dark: #212529;
+  --primary-color: #003152;   --primary-hover: #00223a;
+  --secondary-color: #ffffff;   --text-dark: #212529;
   --text-light: #f8f9fa;
   --bg-light: #f8f9fa;
   --border-color: #ced4da;
-  --accent-color: #ADDFF1; /* Brand Light Blue/Teal */
-  --error-color: #dc3545;
+  --accent-color: #4C9DBB;   --error-color: #dc3545;
 }
 
 body {
@@ -21,7 +18,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Responsive typography */
 h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
 h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
 h3 { font-size: clamp(1.1rem, 3vw, 1.75rem); }
@@ -31,7 +27,6 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
 }
 
-/* Base button styles */
 button {
   background-color: var(--primary-color);
   color: var(--secondary-color);
@@ -40,15 +35,13 @@ button {
   border-radius: 0;
   font-size: 1rem;
   cursor: pointer;
-  min-height: 44px; /* Minimum touch target size */
-}
+  min-height: 44px; }
 
 button:hover {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
 }
 
-/* Base inputs */
 input, select, textarea {
   width: 100%;
   padding: 8px;
@@ -56,15 +49,13 @@ input, select, textarea {
   border: 1px solid var(--border-color);
   border-radius: 0;
   font-size: 1rem;
-  min-height: 44px; /* Minimum touch target size */
-}
+  min-height: 44px; }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
 }
 
-/* Layout utilities */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -80,7 +71,6 @@ input:focus, select:focus, textarea:focus {
   margin-bottom: 20px;
 }
 
-/* Mobile Responsiveness Utilities */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -121,7 +111,6 @@ table {
   }
 }
 
-/* Hide default browser password reveal icon in Edge/Windows */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear {
   display: none;

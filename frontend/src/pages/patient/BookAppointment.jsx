@@ -17,7 +17,7 @@ const BookAppointment = () => {
     
     const { user } = useAuth();
 
-    // Payment Modal State
+    
     const [pendingAppt, setPendingAppt] = useState(null);
     const [processing, setProcessing] = useState(false);
 
@@ -77,11 +77,11 @@ const BookAppointment = () => {
         }
     };
 
-    // Paystack Configuration
+    
     const paystackConfig = {
         reference: (new Date()).getTime().toString(),
         email: user?.email || 'patient@example.com',
-        amount: 10000, // 100 Naira in Kobo
+        amount: 10000, 
         publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
     };
 

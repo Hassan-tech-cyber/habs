@@ -4,9 +4,9 @@ const { createDoctor, createAdmin } = require('../controllers/adminAuthControlle
 const { updateDoctorByAdmin } = require('../controllers/doctorController');
 const { verifyToken, requireRole } = require('../middlewares/auth');
 
-// All routes here require valid token AND 'admin' role
+
 router.use(verifyToken);
-router.use(requireRole(['admin']));
+router.use(requireRole(['admin', 'system_admin']));
 
 router.post('/users/doctor', createDoctor);
 router.post('/users/admin', createAdmin);

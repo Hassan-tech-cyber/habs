@@ -13,8 +13,8 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            // In a real app, verify token with backend /api/auth/me here
-            // For now, assume if token exists, we parse user from local storage
+            
+            
             const storedUser = localStorage.getItem('user');
             if (storedUser) {
                 setUser(JSON.parse(storedUser));

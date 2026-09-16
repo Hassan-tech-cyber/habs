@@ -105,4 +105,45 @@ const sendPatientWelcomeEmail = async (email, name) => {
     }
 };
 
-module.exports = { sendWelcomeEmail, sendAppointmentConfirmation, sendPatientWelcomeEmail };
+const sendAppointmentCancellation = async (patient, doctor, date, slotTime) => {
+    const patientMailOptions = {
+        from: `"HABS Appointments" <${process.env.EMAIL_USER}>`,
+        to: patient.email,
+        subject: `Appointment Cancelled - Dr. ${doctor.name}`,
+        html: `
+            <h3>Hello ${patient.name},</h3>
+            <p>Your appointment with <strong>Dr. ${doctor.name}</strong> on ${date} at ${slotTime} has been cancelled.</p>
+            <p>If you have already made a payment, please contact support for a refund or rescheduling.</p>
+            <br>
+            <p>Regards,<br>HABS Administration</p>
+        `
+    };
+
+    const doctorMailOptions = {
+        from: `"HABS Appointments" <${process.env.EMAIL_USER}>`,
+        to: doctor.email,
+        subject: `Appointment Cancelled - ${patient.name}`,
+        html: `
+            <h3>Hello Dr. ${doctor.name},</h3>
+            <p>An appointment has been cancelled.</p>
+            <p><strong>Details:</strong></p>
+            <ul>
+                <li>Patient: ${patient.name}</li>
+                <li>Date: ${date}</li>
+                <li>Time: ${slotTime}</li>
+            </ul>
+            <br>
+            <p>Regards,<br>HABS Administration</p>
+        `
+    };
+
+    try {
+        await transporter.sendMail(patientMailOptions);
+        await transporter.sendMail(doctorMailOptions);
+        console.log(`Appointment cancellation emails sent to ${patient.email} and ${doctor.email}`);
+    } catch (error) {
+        console.error('Error sending appointment cancellation emails:', error);
+    }
+};
+
+module.exports = { sendWelcomeEmail, sendAppointmentConfirmation, sendPatientWelcomeEmail, sendAppointmentCancellation };

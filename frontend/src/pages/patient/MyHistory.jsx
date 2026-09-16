@@ -29,7 +29,7 @@ const MyHistory = () => {
 
         try {
             await apiFetch(`/appointments/${id}/cancel`, { method: 'PUT' });
-            fetchHistory(); // Refresh history
+            fetchHistory(); 
             Swal.fire('Cancelled', 'Your appointment has been cancelled.');
         } catch (err) {
             Swal.fire('Error', err.message);

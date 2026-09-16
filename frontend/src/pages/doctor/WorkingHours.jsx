@@ -25,9 +25,9 @@ const WorkingHours = () => {
         apiFetch('/auth/me').then(data => {
             if (data.user.workingHours && Object.keys(data.user.workingHours).length > 0) {
                 setHours(data.user.workingHours);
-                setIsEditing(false); // Has hours, start in view mode
+                setIsEditing(false); 
             } else {
-                setIsEditing(true); // No hours, start in edit mode
+                setIsEditing(true); 
             }
             if (data.user.slotDurationMinutes) setSlotDuration(data.user.slotDurationMinutes);
         }).catch(err => console.error(err));
@@ -52,7 +52,7 @@ const WorkingHours = () => {
                 body: JSON.stringify({ workingHours: hours, slotDurationMinutes: Number(slotDuration) })
             });
             setMessage('Working hours saved successfully.');
-            setIsEditing(false); // Switch back to view mode after saving
+            setIsEditing(false); 
         } catch (err) {
             setError(err.message);
         } finally {

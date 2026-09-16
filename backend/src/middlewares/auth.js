@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/prisma');
+const User = require('../models/User');
 
 const verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -12,8 +12,8 @@ const verifyToken = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Re-validate role against Postgres to prevent stale tokens (PRD 4.3 Rule 1)
-        const user = await prisma.user.findUnique({ where: { id: decoded.uid } });
+        
+        const user = await User.findById(decoded.uid);
         if (!user) {
             return res.status(401).json({ error: 'User no longer exists' });
         }
@@ -22,8 +22,8 @@ const verifyToken = async (req, res, next) => {
             return res.status(403).json({ error: 'Role mismatch. Token invalidated.' });
         }
 
-        req.user = decoded; // { uid, role }
-        req.dbUser = user; // Avoid re-fetching in controllers if needed
+        req.user = decoded; 
+        req.dbUser = user; 
         next();
     } catch (error) {
         return res.status(401).json({ error: 'Invalid or expired token' });

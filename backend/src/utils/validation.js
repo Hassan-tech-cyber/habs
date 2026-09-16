@@ -21,8 +21,7 @@ const doctorSchema = Joi.object({
   phone: Joi.string().required(),
   password: Joi.string().min(8).required(), // temporary password provided by admin
   departmentId: Joi.string().required(),
-  specialty: Joi.string().required(),
-  consultationFee: Joi.number().min(0).required()
+  specialty: Joi.string().required()
 });
 
 const adminSchema = Joi.object({
@@ -48,8 +47,8 @@ const doctorUpdateSchema = Joi.object({
   phone: Joi.string().optional(),
   departmentId: Joi.string().optional(),
   specialty: Joi.string().optional(),
-  consultationFee: Joi.number().min(0).optional(),
-  isActive: Joi.boolean().optional()
+  isActive: Joi.boolean().optional(),
+  password: Joi.string().min(8).optional()
 });
 
 const daySchema = Joi.object({
@@ -79,7 +78,7 @@ const appointmentBookingSchema = Joi.object({
 
 const paymentSchema = Joi.object({
   paymentMethod: Joi.string().valid('card', 'transfer', 'cash', 'paystack').required(),
-  reference: Joi.string().optional() // Paystack transaction reference
+  reference: Joi.string().optional() 
 });
 
 module.exports = {

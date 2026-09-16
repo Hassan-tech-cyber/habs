@@ -7,7 +7,7 @@ const seedAdmin = async () => {
         const password = 'truebadfrosh';
         const role = 'admin';
 
-        // Check if admin already exists
+        
         const adminRef = db.collection('users').where('email', '==', email);
         const snapshot = await adminRef.get();
 
@@ -18,11 +18,11 @@ const seedAdmin = async () => {
             await batch.commit();
         }
 
-        // Hash password
+        
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create admin user
+        
         const docRef = await db.collection('users').add({
             email,
             passwordHash: hashedPassword,

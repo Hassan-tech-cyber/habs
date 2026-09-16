@@ -66,17 +66,17 @@ const Departments = () => {
             <div className="card" style={{ marginBottom: '30px' }}>
                 <h3>Add New Department</h3>
                 {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-                <form onSubmit={handleCreate} className="stack-mobile" style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1, width: '100%' }}>
+                <form onSubmit={handleCreate} className="grid-responsive">
+                    <div>
                         <label style={{ display: 'block', marginBottom: '5px' }}>Department Name</label>
                         <input type="text" required value={name} onChange={e => setName(e.target.value)} />
                     </div>
-                    <div style={{ flex: 2, width: '100%' }}>
+                    <div>
                         <label style={{ display: 'block', marginBottom: '5px' }}>Description (Optional)</label>
                         <input type="text" value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
-                    <div style={{ width: '100%', flexShrink: 0 }}>
-                        <button type="submit" disabled={loading} style={{ width: '100%', marginBottom: '15px' }}>{loading ? 'Adding...' : 'Add'}</button>
+                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                        <button type="submit" disabled={loading} style={{ width: '100%' }}>{loading ? 'Adding...' : 'Add Department'}</button>
                     </div>
                 </form>
             </div>

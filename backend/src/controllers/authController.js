@@ -1,14 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const prisma = require('../config/prisma');
+const User = require('../models/User');
 const { patientSchema, profileUpdateSchema } = require('../utils/validation');
 const { sendPatientWelcomeEmail } = require('../utils/mailer');
 
 const generateToken = (user) => {
     return jwt.sign(
-        { uid: user.id, role: user.role },
+        { uid: user._id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: '2m' }
+        { expiresIn: '10m' }
     );
 };
 
@@ -19,9 +19,7 @@ const registerPatient = async (req, res) => {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email: value.email }
-        });
+        const existingUser = await User.findOne({ email: value.email });
 
         if (existingUser) {
             return res.status(400).json({ error: 'Email already exists' });
@@ -45,17 +43,13 @@ const registerPatient = async (req, res) => {
             passwordHash: passwordHash
         };
 
-        const newUser = await prisma.user.create({
-            data: userData
-        });
+        const newUser = await User.create(userData);
 
-        const createdUser = { ...newUser, uid: newUser.id };
+        const createdUser = { ...newUser.toJSON(), uid: newUser._id };
         const token = generateToken(newUser);
 
         // Send welcome email (non-blocking)
         sendPatientWelcomeEmail(value.email, value.name);
-
-        delete createdUser.passwordHash;
 
         res.status(201).json({ token, user: createdUser });
     } catch (error) {
@@ -71,9 +65,7 @@ const login = async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required' });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email }
-        });
+        const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid email or password' });
@@ -85,13 +77,12 @@ const login = async (req, res) => {
         }
 
         if (user.role === 'doctor' && !user.isActive) {
-             // Optional: handle deactivated doctors logging in
+             
         }
 
         const token = generateToken(user);
         
-        const safeUser = { ...user, uid: user.id };
-        delete safeUser.passwordHash;
+        const safeUser = { ...user.toJSON(), uid: user._id };
 
         res.status(200).json({ token, user: safeUser });
     } catch (error) {
@@ -101,9 +92,8 @@ const login = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-    // req.dbUser is populated by the verifyToken middleware
-    const safeUser = { ...req.dbUser, uid: req.dbUser.id };
-    delete safeUser.passwordHash;
+    
+    const safeUser = { ...req.dbUser.toJSON(), uid: req.dbUser._id };
     res.status(200).json({ user: safeUser });
 };
 
@@ -122,10 +112,7 @@ const updateProfile = async (req, res) => {
             return res.status(400).json({ error: 'No valid fields provided for update' });
         }
 
-        const updatedUser = await prisma.user.update({
-            where: { id: req.user.uid },
-            data: updates
-        });
+        const updatedUser = await User.findByIdAndUpdate(req.user.uid, updates, { new: true });
 
         res.status(200).json({ message: 'Profile updated successfully', updates });
     } catch (error) {

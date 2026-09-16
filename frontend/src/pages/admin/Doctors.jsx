@@ -12,7 +12,6 @@ const Doctors = () => {
     const [password, setPassword] = useState('');
     const [departmentId, setDepartmentId] = useState('');
     const [specialty, setSpecialty] = useState('');
-    const [consultationFee, setConsultationFee] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [editingDoctorId, setEditingDoctorId] = useState(null);
     
@@ -43,7 +42,7 @@ const Doctors = () => {
         try {
             if (editingDoctorId) {
                 // Update mode
-                const updates = { name, email, phone, departmentId, specialty, consultationFee: Number(consultationFee) };
+                const updates = { name, email, phone, departmentId, specialty };
                 if (password) {
                     updates.password = password; // Only send if changed, backend doesn't handle this right now but we'll leave it
                 }
@@ -54,10 +53,10 @@ const Doctors = () => {
                 setDoctors(prev => prev.map(d => d.uid === editingDoctorId ? { ...d, ...updates } : d));
                 Swal.fire('Success', 'Doctor updated successfully!');
             } else {
-                // Create mode
+                
                 await apiFetch('/admin/users/doctor', {
                     method: 'POST',
-                    body: JSON.stringify({ name, email, phone, password, departmentId, specialty, consultationFee: Number(consultationFee) })
+                    body: JSON.stringify({ name, email, phone, password, departmentId, specialty })
                 });
                 fetchData();
                 Swal.fire('Success', 'Doctor registered successfully and email sent!');
@@ -78,13 +77,12 @@ const Doctors = () => {
         setPassword(''); // Don't prefill password
         setDepartmentId(doc.departmentId || '');
         setSpecialty(doc.specialty || '');
-        setConsultationFee(doc.consultationFee || '');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const cancelEdit = () => {
         setEditingDoctorId(null);
-        setName(''); setEmail(''); setPhone(''); setPassword(''); setDepartmentId(''); setSpecialty(''); setConsultationFee('');
+        setName(''); setEmail(''); setPhone(''); setPassword(''); setDepartmentId(''); setSpecialty('');
     };
 
     const handleUpdateDoctor = async (uid, updates) => {
@@ -139,11 +137,6 @@ const Doctors = () => {
                     <div>
                         <label style={{ display: 'block', marginBottom: '5px' }}>Specialty</label>
                         <input type="text" placeholder="e.g., Cardiologist" required value={specialty} onChange={e => setSpecialty(e.target.value)} />
-                    </div>
-
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>Consultation Fee (₦)</label>
-                        <input type="number" placeholder="NGN" required value={consultationFee} onChange={e => setConsultationFee(e.target.value)} min="0" />
                     </div>
 
                     <div>

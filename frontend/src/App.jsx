@@ -25,7 +25,7 @@ const AppRoutes = () => {
                 <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
             </Route>
             
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'system_admin']} />}>
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
             </Route>
             

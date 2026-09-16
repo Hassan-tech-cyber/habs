@@ -1,4 +1,5 @@
-const prisma = require('../config/prisma');
+const User = require('../models/User');
+const Appointment = require('../models/Appointment');
 const { doctorUpdateSchema, workingHoursSchema } = require('../utils/validation');
 
 const getDoctors = async (req, res) => {
@@ -10,33 +11,16 @@ const getDoctors = async (req, res) => {
             whereClause.departmentId = departmentId;
         }
 
-        // Filter inactive doctors for patients/public
-        const isAdmin = req.user && req.user.role === 'admin';
+        
+        const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'system_admin');
         if (!isAdmin) {
             whereClause.isActive = true;
         }
 
-        const doctors = await prisma.user.findMany({
-            where: whereClause,
-            select: {
-                id: true,
-                role: true,
-                email: true,
-                name: true,
-                phone: true,
-                departmentId: true,
-                specialty: true,
-                consultationFee: true,
-                isActive: true,
-                workingHours: true,
-                slotDurationMinutes: true,
-                createdAt: true,
-                updatedAt: true
-            }
-        });
+        const doctors = await User.find(whereClause).select('-passwordHash');
         
-        // Map id to uid to maintain frontend compatibility
-        const mappedDoctors = doctors.map(doc => ({ ...doc, uid: doc.id }));
+        
+        const mappedDoctors = doctors.map(doc => ({ ...doc.toJSON(), uid: doc._id }));
 
         res.status(200).json({ doctors: mappedDoctors });
     } catch (error) {
@@ -51,16 +35,20 @@ const updateDoctorByAdmin = async (req, res) => {
         const { error, value } = doctorUpdateSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        const doctor = await prisma.user.findUnique({ where: { id: uid } });
+        const doctor = await User.findById(uid);
 
         if (!doctor || doctor.role !== 'doctor') {
             return res.status(404).json({ error: 'Doctor not found' });
         }
 
-        const updatedDoctor = await prisma.user.update({
-            where: { id: uid },
-            data: value
-        });
+        const updateData = { ...value };
+        if (updateData.password) {
+            const bcrypt = require('bcrypt');
+            updateData.passwordHash = await bcrypt.hash(updateData.password, 10);
+            delete updateData.password;
+        }
+
+        const updatedDoctor = await User.findByIdAndUpdate(uid, updateData, { new: true });
 
         res.status(200).json({ message: 'Doctor updated successfully', updates: value });
     } catch (error) {
@@ -74,12 +62,9 @@ const updateWorkingHours = async (req, res) => {
         const { error, value } = workingHoursSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        await prisma.user.update({
-            where: { id: req.user.uid },
-            data: {
-                workingHours: value.workingHours,
-                slotDurationMinutes: value.slotDurationMinutes
-            }
+        await User.findByIdAndUpdate(req.user.uid, {
+            workingHours: value.workingHours,
+            slotDurationMinutes: value.slotDurationMinutes
         });
 
         res.status(200).json({ message: 'Working hours updated successfully' });
@@ -100,7 +85,7 @@ const generateSlots = (start, end, durationMinutes) => {
         slots.push(`${h}:${m}`);
         current = new Date(current.getTime() + durationMinutes * 60000);
         
-        // Ensure the slot doesn't exceed the end time
+        
         if (current > endTime) break;
     }
     return slots;
@@ -109,47 +94,43 @@ const generateSlots = (start, end, durationMinutes) => {
 const getDoctorSlots = async (req, res) => {
     try {
         const { uid } = req.params;
-        const { date } = req.query; // YYYY-MM-DD
+        const { date } = req.query; 
         if (!date) return res.status(400).json({ error: 'date query parameter is required' });
 
-        const doctor = await prisma.user.findUnique({ where: { id: uid } });
+        const doctor = await User.findById(uid);
         
         if (!doctor || doctor.role !== 'doctor') {
             return res.status(404).json({ error: 'Doctor not found' });
         }
 
         if (!doctor.isActive) {
-            return res.status(200).json({ slots: [] }); // Deactivated doctors have no slots
+            return res.status(200).json({ slots: [] }); 
         }
 
-        // Get day of week: mon, tue, wed...
+        
         const d = new Date(date);
         const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
         const dayName = days[d.getDay()];
 
         const dayConfig = doctor.workingHours && doctor.workingHours[dayName];
         if (!dayConfig || !dayConfig.active) {
-            return res.status(200).json({ slots: [] }); // Doctor not working this day
+            return res.status(200).json({ slots: [] }); 
         }
 
-        // Generate all possible slots
+        
         const allSlots = generateSlots(dayConfig.start, dayConfig.end, doctor.slotDurationMinutes || 30);
 
-        // Fetch existing appointments for this doctor on this date
-        const appointments = await prisma.appointment.findMany({
-            where: {
-                doctorId: uid,
-                date: date,
-                status: {
-                    in: ['pending_payment', 'confirmed']
-                }
-            },
-            select: { slotTime: true }
-        });
+        const appointments = await Appointment.find({
+            doctorId: uid,
+            date: date,
+            status: {
+                $in: ['pending_payment', 'confirmed']
+            }
+        }).select('slotTime');
 
         const bookedSlots = appointments.map(appt => appt.slotTime);
 
-        // Filter out booked slots
+        
         const availableSlots = allSlots.filter(s => !bookedSlots.includes(s));
 
         res.status(200).json({ slots: availableSlots });
