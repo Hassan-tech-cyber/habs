@@ -1,0 +1,13 @@
+node_modules/
+.env
+.DS_Store
+*.json
+!package.json
+!package-lock.json
+*.log
+backend/node_modules/
+backend/.env
+frontend/node_modules/
+frontend/.env
+habs-4c6f2-firebase-adminsdk-fbsvc-666ca2441f.json
+agents/

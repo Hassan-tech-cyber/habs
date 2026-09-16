@@ -1,0 +1,70 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                       String        @id @default(uuid())
+  role                     String        // 'admin', 'doctor', 'patient'
+  email                    String        @unique
+  passwordHash             String
+  name                     String
+  phone                    String
+  
+  // Patient Fields
+  dob                      String?
+  gender                   String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+  allergies                String?
+  chronicConditions        String?
+  currentMedications       String?
+
+  // Doctor Fields
+  departmentId             String?
+  department               Department?   @relation(fields: [departmentId], references: [id])
+  specialty                String?
+  consultationFee          Float?
+  isActive                 Boolean?      @default(true)
+  workingHours             Json?
+  slotDurationMinutes      Int?          @default(30)
+
+  appointmentsAsPatient    Appointment[] @relation("PatientAppointments")
+  appointmentsAsDoctor     Appointment[] @relation("DoctorAppointments")
+
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  doctors     User[]
+  createdAt   DateTime @default(now())
+}
+
+model Appointment {
+  id               String   @id @default(uuid())
+  date             String   // YYYY-MM-DD
+  slotTime         String   // HH:mm
+  status           String   // 'pending_payment', 'confirmed', 'cancelled', 'completed'
+  paymentMethod    String?
+  paymentReference String?
+  paidAt           DateTime?
+  
+  patientId        String
+  patient          User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  
+  doctorId         String
+  doctor           User     @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
