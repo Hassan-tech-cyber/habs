@@ -23,11 +23,14 @@ const BookAppointment = () => {
 
     useEffect(() => {
         apiFetch('/departments').then(res => setDepartments(res.departments));
-        fetchDoctors();
     }, []);
 
     const fetchDoctors = (deptId = '') => {
-        const url = deptId ? `/doctors?departmentId=${deptId}` : '/doctors';
+        if (!deptId) {
+            setDoctors([]);
+            return;
+        }
+        const url = `/doctors?departmentId=${deptId}`;
         apiFetch(url).then(res => setDoctors(res.doctors));
     };
 
@@ -163,14 +166,14 @@ const BookAppointment = () => {
                 <div style={{ flex: 1 }}>
                     <label>Filter by Department</label>
                     <select value={selectedDept} onChange={handleDeptChange}>
-                        <option value="">All Departments</option>
+                        <option value="" disabled>-- Select a Department --</option>
                         {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                     </select>
                 </div>
                 
                 <div style={{ flex: 1 }}>
                     <label>Select Doctor</label>
-                    <select value={selectedDoc} onChange={e => setSelectedDoc(e.target.value)}>
+                    <select value={selectedDoc} onChange={e => setSelectedDoc(e.target.value)} disabled={!selectedDept}>
                         <option value="" disabled>-- Choose a Doctor --</option>
                         {doctors.map(d => <option key={d.uid} value={d.uid}>Dr. {d.name}{d.specialty ? ` (${d.specialty})` : ''}</option>)}
                     </select>
