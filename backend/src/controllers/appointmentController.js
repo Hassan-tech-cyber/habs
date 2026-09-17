@@ -77,11 +77,9 @@ const payForAppointment = async (req, res) => {
         await appt.save();
 
         
-        try {
-            await sendAppointmentConfirmation(appt.patientId, appt.doctorId, appt.date, appt.slotTime);
-        } catch (emailErr) {
-            console.error('Email failed to send, but appointment confirmed:', emailErr);
-        }
+        // Send email asynchronously so it doesn't block the API response
+        sendAppointmentConfirmation(appt.patientId, appt.doctorId, appt.date, appt.slotTime)
+            .catch(emailErr => console.error('Email failed to send, but appointment confirmed:', emailErr));
 
         res.status(200).json({ message: 'Payment successful, appointment confirmed', appointment: appt });
     } catch (error) {
@@ -172,11 +170,9 @@ const cancelAppointment = async (req, res) => {
             appt.status = 'cancelled';
             await appt.save();
             
-            try {
-                await sendAppointmentCancellation(appt.patientId, appt.doctorId, appt.date, appt.slotTime);
-            } catch (emailErr) {
-                console.error('Failed to send cancellation email:', emailErr);
-            }
+            // Send email asynchronously
+            sendAppointmentCancellation(appt.patientId, appt.doctorId, appt.date, appt.slotTime)
+                .catch(emailErr => console.error('Failed to send cancellation email:', emailErr));
 
             res.status(200).json({ message: 'Appointment cancelled successfully.' });
         }
