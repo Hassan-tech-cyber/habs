@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../utils/api';
 import Swal from 'sweetalert2';
+import { toast } from '../../utils/toast';
 
 const Doctors = () => {
     const [doctors, setDoctors] = useState([]);
@@ -10,9 +11,11 @@ const Doctors = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [departmentId, setDepartmentId] = useState('');
     const [specialty, setSpecialty] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [editingDoctorId, setEditingDoctorId] = useState(null);
     
     const [loading, setLoading] = useState(false);
@@ -37,6 +40,22 @@ const Doctors = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (password) {
+            if (password !== confirmPassword) {
+                setError('Passwords do not match');
+                toast.error('Passwords do not match');
+                return;
+            }
+            const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/;
+            if (!passwordRegex.test(password)) {
+                const msg = 'Password must contain at least one letter, one number, and one special symbol.';
+                setError(msg);
+                toast.error(msg);
+                return;
+            }
+        }
+
         setLoading(true);
         setError('');
         try {
@@ -51,7 +70,7 @@ const Doctors = () => {
                     body: JSON.stringify(updates)
                 });
                 setDoctors(prev => prev.map(d => d.uid === editingDoctorId ? { ...d, ...updates } : d));
-                Swal.fire('Success', 'Doctor updated successfully!');
+                toast.success('Doctor updated successfully!');
             } else {
                 
                 await apiFetch('/admin/users/doctor', {
@@ -59,11 +78,11 @@ const Doctors = () => {
                     body: JSON.stringify({ name, email, phone, password, departmentId, specialty })
                 });
                 fetchData();
-                Swal.fire('Success', 'Doctor registered successfully and email sent!');
+                toast.success('Doctor registered successfully and email sent!');
             }
             cancelEdit();
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         } finally {
             setLoading(false);
         }
@@ -82,7 +101,7 @@ const Doctors = () => {
 
     const cancelEdit = () => {
         setEditingDoctorId(null);
-        setName(''); setEmail(''); setPhone(''); setPassword(''); setDepartmentId(''); setSpecialty('');
+        setName(''); setEmail(''); setPhone(''); setPassword(''); setConfirmPassword(''); setDepartmentId(''); setSpecialty('');
     };
 
     const handleUpdateDoctor = async (uid, updates) => {
@@ -92,9 +111,9 @@ const Doctors = () => {
                 body: JSON.stringify(updates)
             });
             setDoctors(prev => prev.map(d => d.uid === uid ? { ...d, ...updates } : d));
-            Swal.fire('Success', 'Status updated successfully.');
+            toast.success('Status updated successfully.');
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         }
     };
 
@@ -166,6 +185,41 @@ const Doctors = () => {
                                 }}
                             >
                                 {showPassword ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px' }}>Confirm Password {editingDoctorId && '(Optional)'}</label>
+                        <div style={{ position: 'relative' }}>
+                            <input 
+                                type={showConfirmPassword ? 'text' : 'password'} 
+                                required={!editingDoctorId && !!password} 
+                                value={confirmPassword} 
+                                onChange={e => setConfirmPassword(e.target.value)} 
+                                style={{ width: '100%', paddingRight: '40px', marginBottom: 0 }}
+                            />
+                            <button 
+                                type="button" 
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                style={{ 
+                                    position: 'absolute', 
+                                    right: '10px', 
+                                    top: '50%', 
+                                    transform: 'translateY(-50%)', 
+                                    background: 'none', 
+                                    border: 'none', 
+                                    cursor: 'pointer',
+                                    padding: '0',
+                                    color: 'var(--text-dark)',
+                                    opacity: 0.6
+                                }}
+                            >
+                                {showConfirmPassword ? (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                                 ) : (
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>

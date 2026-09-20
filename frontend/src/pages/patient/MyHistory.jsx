@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../utils/api';
 import Swal from 'sweetalert2';
+import { toast } from '../../utils/toast';
 
 const MyHistory = () => {
     const [appointments, setAppointments] = useState([]);
@@ -29,10 +30,10 @@ const MyHistory = () => {
 
         try {
             await apiFetch(`/appointments/${id}/cancel`, { method: 'PUT' });
-            fetchHistory(); 
-            Swal.fire('Cancelled', 'Your appointment has been cancelled.');
+            fetchHistory();
+            toast.success('Your appointment has been cancelled.');
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         }
     };
 

@@ -3,6 +3,7 @@ import { apiFetch } from '../../utils/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePaystackPayment } from 'react-paystack';
 import Swal from 'sweetalert2';
+import { toast } from '../../utils/toast';
 
 const BookAppointment = () => {
     const [doctors, setDoctors] = useState([]);
@@ -76,7 +77,7 @@ const BookAppointment = () => {
             });
             setPendingAppt(res.appointment);
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         }
     };
 
@@ -98,18 +99,18 @@ const BookAppointment = () => {
                 method: 'POST',
                 body: JSON.stringify({ paymentMethod: 'paystack', reference: reference.reference })
             });
-            Swal.fire('Payment Successful!', 'Your appointment is now confirmed.');
+            toast.success('Your appointment is now confirmed.');
             setPendingAppt(null);
             fetchSlots();
         } catch (err) {
-            Swal.fire('Warning', 'Payment verified, but failed to confirm appointment: ' + err.message);
+            toast.warning('Payment verified, but failed to confirm appointment: ' + err.message);
         } finally {
             setProcessing(false);
         }
     };
 
     const onPaystackClose = () => {
-        Swal.fire('Cancelled', 'Payment was cancelled.');
+        toast.info('Payment was cancelled.');
     };
 
     const handleCancelPayment = async () => {
@@ -126,9 +127,9 @@ const BookAppointment = () => {
             await apiFetch(`/appointments/${pendingAppt.id}/cancel`, { method: 'PUT' });
             setPendingAppt(null);
             fetchSlots();
-            Swal.fire('Cancelled', 'Your booking has been cancelled and the slot is freed.');
+            toast.success('Your booking has been cancelled and the slot is freed.');
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         } finally {
             setProcessing(false);
         }

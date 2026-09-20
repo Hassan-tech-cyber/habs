@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { toast } from '../../utils/toast';
 import { apiFetch } from '../../utils/api';
 
 const DoctorAppointments = () => {
@@ -12,6 +13,29 @@ const DoctorAppointments = () => {
             .catch(err => console.error(err))
             .finally(() => setLoading(false));
     }, []);
+
+    const updateStatus = async (apt, newStatus) => {
+        const res = await Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to update status to ${newStatus}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'Cancel'
+        });
+        if (res.isConfirmed) {
+            try {
+                await apiFetch(`/doctor/appointments/${apt.id}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                setAppointments(prev => prev.map(a => a.id === apt.id ? { ...a, status: newStatus } : a));
+                toast.success('Status updated successfully');
+            } catch (err) {
+                toast.error(err.message);
+            }
+        }
+    };
 
     if (loading) return <p>Loading schedule...</p>;
 
@@ -69,10 +93,26 @@ const DoctorAppointments = () => {
                                                     `
                                                 });
                                             }}
-                                            style={{ backgroundColor: '#09a5db', padding: '4px 8px', fontSize: '0.8rem' }}
+                                            style={{ backgroundColor: '#09a5db', padding: '4px 8px', fontSize: '0.8rem', marginRight: '5px' }}
                                         >
                                             Info
                                         </button>
+                                        {a.status === 'pending' && (
+                                            <>
+                                                <button 
+                                                    onClick={() => updateStatus(a, 'confirmed')}
+                                                    style={{ backgroundColor: 'var(--accent-color)', padding: '4px 8px', fontSize: '0.8rem', marginRight: '5px' }}
+                                                >
+                                                    Confirm
+                                                </button>
+                                                <button 
+                                                    onClick={() => updateStatus(a, 'cancelled')}
+                                                    style={{ backgroundColor: '#e74c3c', padding: '4px 8px', fontSize: '0.8rem' }}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

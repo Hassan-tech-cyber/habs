@@ -4,7 +4,9 @@ const patientSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   phone: Joi.string().required(),
-  password: Joi.string().min(8).required(),
+  password: Joi.string().min(8).pattern(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/).required().messages({
+    'string.pattern.base': 'Password must contain at least one letter, one number, and one special symbol.'
+  }),
   dob: Joi.date().iso().required(),
   gender: Joi.string().valid('male', 'female', 'other').required(),
   emergencyContactName: Joi.string().required(),
@@ -19,7 +21,9 @@ const doctorSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   phone: Joi.string().required(),
-  password: Joi.string().min(8).required(), // temporary password provided by admin
+  password: Joi.string().min(8).pattern(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/).required().messages({
+    'string.pattern.base': 'Password must contain at least one letter, one number, and one special symbol.'
+  }), // temporary password provided by admin
   departmentId: Joi.string().required(),
   specialty: Joi.string().required()
 });
@@ -28,7 +32,9 @@ const adminSchema = Joi.object({
   name: Joi.string().required(),
   email: Joi.string().email().required(),
   phone: Joi.string().required(),
-  password: Joi.string().min(8).required()
+  password: Joi.string().min(8).pattern(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/).required().messages({
+    'string.pattern.base': 'Password must contain at least one letter, one number, and one special symbol.'
+  })
 });
 
 const profileUpdateSchema = Joi.object({
@@ -48,7 +54,9 @@ const doctorUpdateSchema = Joi.object({
   departmentId: Joi.string().optional(),
   specialty: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
-  password: Joi.string().min(8).optional()
+  password: Joi.string().min(8).pattern(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/).optional().messages({
+    'string.pattern.base': 'Password must contain at least one letter, one number, and one special symbol.'
+  })
 });
 
 const daySchema = Joi.object({

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { apiFetch } from '../../utils/api';
 import Swal from 'sweetalert2';
+import { toast } from '../../utils/toast';
 
 const Departments = () => {
     const [departments, setDepartments] = useState([]);
@@ -34,8 +35,9 @@ const Departments = () => {
             setName('');
             setDescription('');
             setDepartments(prev => [...prev, response.department]);
+            toast.success('Department created successfully!');
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         } finally {
             setLoading(false);
         }
@@ -53,9 +55,9 @@ const Departments = () => {
         try {
             await apiFetch(`/departments/${id}`, { method: 'DELETE' });
             setDepartments(prev => prev.filter(d => d.id !== id));
-            Swal.fire('Deleted!', 'The department has been deleted.');
+            toast.success('The department has been deleted.');
         } catch (err) {
-            Swal.fire('Error', err.message);
+            toast.error(err.message);
         }
     };
 
