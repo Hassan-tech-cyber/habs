@@ -14,6 +14,8 @@ const Doctors = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [departmentId, setDepartmentId] = useState('');
     const [specialty, setSpecialty] = useState('');
+    const [consultationFee, setConsultationFee] = useState('');
+    const [slotDurationMinutes, setSlotDurationMinutes] = useState(30);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [editingDoctorId, setEditingDoctorId] = useState(null);
@@ -61,7 +63,7 @@ const Doctors = () => {
         try {
             if (editingDoctorId) {
                 // Update mode
-                const updates = { name, email, phone, departmentId, specialty };
+                const updates = { name, email, phone, departmentId, specialty, consultationFee, slotDurationMinutes };
                 if (password) {
                     updates.password = password; // Only send if changed, backend doesn't handle this right now but we'll leave it
                 }
@@ -75,7 +77,7 @@ const Doctors = () => {
                 
                 await apiFetch('/admin/users/doctor', {
                     method: 'POST',
-                    body: JSON.stringify({ name, email, phone, password, departmentId, specialty })
+                    body: JSON.stringify({ name, email, phone, password, departmentId, specialty, consultationFee, slotDurationMinutes })
                 });
                 fetchData();
                 toast.success('Doctor registered successfully and email sent!');
@@ -96,12 +98,14 @@ const Doctors = () => {
         setPassword(''); // Don't prefill password
         setDepartmentId(doc.departmentId || '');
         setSpecialty(doc.specialty || '');
+        setConsultationFee(doc.consultationFee || '');
+        setSlotDurationMinutes(doc.slotDurationMinutes || 30);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const cancelEdit = () => {
         setEditingDoctorId(null);
-        setName(''); setEmail(''); setPhone(''); setPassword(''); setConfirmPassword(''); setDepartmentId(''); setSpecialty('');
+        setName(''); setEmail(''); setPhone(''); setPassword(''); setConfirmPassword(''); setDepartmentId(''); setSpecialty(''); setConsultationFee(''); setSlotDurationMinutes(30);
     };
 
     const handleUpdateDoctor = async (uid, updates) => {
@@ -156,6 +160,22 @@ const Doctors = () => {
                     <div>
                         <label style={{ display: 'block', marginBottom: '5px' }}>Specialty</label>
                         <input type="text" placeholder="e.g., Cardiologist" required value={specialty} onChange={e => setSpecialty(e.target.value)} />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px' }}>Consultation Fee (₦)</label>
+                        <input type="number" min="0" required value={consultationFee} onChange={e => setConsultationFee(e.target.value)} />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px' }}>Slot Duration (Minutes)</label>
+                        <select required value={slotDurationMinutes} onChange={e => setSlotDurationMinutes(Number(e.target.value))}>
+                            <option value={15}>15</option>
+                            <option value={20}>20</option>
+                            <option value={30}>30</option>
+                            <option value={45}>45</option>
+                            <option value={60}>60</option>
+                        </select>
                     </div>
 
                     <div>

@@ -38,6 +38,13 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Department'
     },
+    consultationFee: {
+        type: Number
+    },
+    slotDurationMinutes: {
+        type: Number,
+        default: 30
+    },
     workingHours: mongoose.Schema.Types.Mixed,
     isAvailable: {
         type: Boolean,
