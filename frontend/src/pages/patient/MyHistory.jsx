@@ -50,6 +50,7 @@ const MyHistory = () => {
                                 <th style={{ padding: '10px' }}>Date</th>
                                 <th style={{ padding: '10px' }}>Time</th>
                                 <th style={{ padding: '10px' }}>Doctor ID</th>
+                                <th style={{ padding: '10px' }}>Reason</th>
                                 <th style={{ padding: '10px' }}>Status</th>
                                 <th style={{ padding: '10px' }}>Action</th>
                             </tr>
@@ -60,6 +61,7 @@ const MyHistory = () => {
                                     <td style={{ padding: '10px' }}>{a.date}</td>
                                     <td style={{ padding: '10px' }}>{a.slotTime}</td>
                                     <td style={{ padding: '10px', fontFamily: 'monospace' }}>{a.doctorId.substring(0,8)}...</td>
+                                    <td style={{ padding: '10px', maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.reason || 'N/A'}</td>
                                     <td style={{ padding: '10px' }}>
                                         <span style={{ 
                                             padding: '4px 8px', 

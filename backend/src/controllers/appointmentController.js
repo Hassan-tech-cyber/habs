@@ -8,7 +8,7 @@ const bookAppointment = async (req, res) => {
         const { error, value } = appointmentBookingSchema.validate(req.body);
         if (error) return res.status(400).json({ error: error.details[0].message });
 
-        const { doctorId, date, slotTime } = value;
+        const { doctorId, date, slotTime, reason } = value;
         const patientId = req.user.uid;
 
         
@@ -36,6 +36,7 @@ const bookAppointment = async (req, res) => {
             departmentId: doctor.departmentId,
             date,
             slotTime,
+            reason: reason || '',
             status: 'pending_payment'
         });
         

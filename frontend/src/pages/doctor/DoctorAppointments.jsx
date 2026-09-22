@@ -50,6 +50,7 @@ const DoctorAppointments = () => {
                                 <th style={{ padding: '10px' }}>Date</th>
                                 <th style={{ padding: '10px' }}>Time</th>
                                 <th style={{ padding: '10px' }}>Patient</th>
+                                <th style={{ padding: '10px' }}>Reason</th>
                                 <th style={{ padding: '10px' }}>Status</th>
                                 <th style={{ padding: '10px' }}>Action</th>
                             </tr>
@@ -60,6 +61,7 @@ const DoctorAppointments = () => {
                                     <td style={{ padding: '10px' }}>{a.date}</td>
                                     <td style={{ padding: '10px' }}>{a.slotTime}</td>
                                     <td style={{ padding: '10px' }}>{a.patientName}</td>
+                                    <td style={{ padding: '10px', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{a.reason || 'N/A'}</td>
                                     <td style={{ padding: '10px' }}>
                                         <span style={{ 
                                             padding: '4px 8px', 
@@ -79,6 +81,9 @@ const DoctorAppointments = () => {
                                                     html: `
                                                         <div style="text-align: left;">
                                                             <p><strong>Phone:</strong> ${a.patientPhone}</p>
+                                                            <hr style="margin: 10px 0; border: 1px solid #eee;" />
+                                                            <h4 style="margin-bottom: 5px;">Appointment Details</h4>
+                                                            <p><strong>Reason for Visit:</strong> ${a.reason || 'Not specified'}</p>
                                                             <hr style="margin: 10px 0; border: 1px solid #eee;" />
                                                             <h4 style="margin-bottom: 5px;">Medical Background</h4>
                                                             <p><strong>Allergies:</strong> ${a.allergies}</p>

@@ -13,6 +13,7 @@ const BookAppointment = () => {
     
     // YYYY-MM-DD format for date input
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [reason, setReason] = useState('');
     const [slots, setSlots] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     
@@ -73,7 +74,7 @@ const BookAppointment = () => {
         try {
             const res = await apiFetch('/appointments', {
                 method: 'POST',
-                body: JSON.stringify({ doctorId: selectedDoc, date: selectedDate, slotTime: time })
+                body: JSON.stringify({ doctorId: selectedDoc, date: selectedDate, slotTime: time, reason })
             });
             setPendingAppt(res.appointment);
         } catch (err) {
@@ -184,6 +185,17 @@ const BookAppointment = () => {
                     <label>Select Date</label>
                     <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
                 </div>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+                <label>Reason for Visit (Optional)</label>
+                <textarea 
+                    value={reason} 
+                    onChange={e => setReason(e.target.value)} 
+                    placeholder="Briefly describe your symptoms or reason for the visit"
+                    rows="3"
+                    style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)', resize: 'vertical' }}
+                />
             </div>
 
             {selectedDoc && (
