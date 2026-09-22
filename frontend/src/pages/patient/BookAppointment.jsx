@@ -63,6 +63,11 @@ const BookAppointment = () => {
     }, [selectedDoc, selectedDate]);
 
     const handleBook = async (time) => {
+        if (!reason.trim()) {
+            toast.error("Please provide a reason for your visit.");
+            return;
+        }
+
         const result = await Swal.fire({
             title: 'Confirm Booking',
             text: `Book appointment for ${selectedDate} at ${time}?`,
@@ -188,7 +193,7 @@ const BookAppointment = () => {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-                <label>Reason for Visit (Optional)</label>
+                <label>Reason for Visit <span style={{ color: 'red' }}>*</span></label>
                 <textarea 
                     value={reason} 
                     onChange={e => setReason(e.target.value)} 

@@ -89,7 +89,7 @@ const appointmentBookingSchema = Joi.object({
   doctorId: Joi.string().required(),
   date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required(),
   slotTime: Joi.string().pattern(/^([01]\d|2[0-3]):([0-5]\d)$/).required(),
-  reason: Joi.string().allow('').optional()
+  reason: Joi.string().required()
 });
 
 const paymentSchema = Joi.object({
