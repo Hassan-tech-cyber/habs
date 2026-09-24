@@ -19,7 +19,9 @@ const Register = () => {
         emergencyContactRelation: '',
         allergies: '',
         chronicConditions: '',
-        currentMedications: ''
+        currentMedications: '',
+        bloodGroup: '',
+        genotype: ''
     });
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
@@ -226,6 +228,34 @@ const Register = () => {
                         <>
                             <h3 style={{ marginBottom: '15px' }}>Medical Background</h3>
                             
+                            <div className="stack-mobile" style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', marginBottom: '5px' }}>Blood Group</label>
+                                    <select value={formData.bloodGroup} onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})} style={{ width: '100%', padding: '10px' }}>
+                                        <option value="">-- Optional --</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <label style={{ display: 'block', marginBottom: '5px' }}>Genotype</label>
+                                    <select value={formData.genotype} onChange={(e) => setFormData({...formData, genotype: e.target.value})} style={{ width: '100%', padding: '10px' }}>
+                                        <option value="">-- Optional --</option>
+                                        <option value="AA">AA</option>
+                                        <option value="AS">AS</option>
+                                        <option value="SS">SS</option>
+                                        <option value="AC">AC</option>
+                                        <option value="SC">SC</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div style={{ marginBottom: '15px' }}>
                                 <label style={{ display: 'block', marginBottom: '5px' }}>Known Allergies</label>
                                 <textarea 

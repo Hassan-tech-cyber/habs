@@ -14,7 +14,9 @@ const patientSchema = Joi.object({
   emergencyContactRelation: Joi.string().required(),
   allergies: Joi.string().allow('').optional(),
   chronicConditions: Joi.string().allow('').optional(),
-  currentMedications: Joi.string().allow('').optional()
+  currentMedications: Joi.string().allow('').optional(),
+  bloodGroup: Joi.string().valid('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', '').optional(),
+  genotype: Joi.string().valid('AA', 'AS', 'SS', 'AC', 'SC', '').optional()
 });
 
 const doctorSchema = Joi.object({
@@ -44,7 +46,17 @@ const adminSchema = Joi.object({
 
 const profileUpdateSchema = Joi.object({
   name: Joi.string().optional(),
-  phone: Joi.string().optional()
+  phone: Joi.string().optional(),
+  dob: Joi.date().iso().optional(),
+  gender: Joi.string().valid('male', 'female', 'other').optional(),
+  emergencyContactName: Joi.string().optional(),
+  emergencyContactPhone: Joi.string().optional(),
+  emergencyContactRelation: Joi.string().optional(),
+  allergies: Joi.string().allow('').optional(),
+  chronicConditions: Joi.string().allow('').optional(),
+  currentMedications: Joi.string().allow('').optional(),
+  bloodGroup: Joi.string().valid('A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', '').optional(),
+  genotype: Joi.string().valid('AA', 'AS', 'SS', 'AC', 'SC', '').optional()
 });
 
 const departmentSchema = Joi.object({

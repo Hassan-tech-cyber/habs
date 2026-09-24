@@ -29,6 +29,8 @@ const UserSchema = new mongoose.Schema({
     allergies: String,
     chronicConditions: String,
     currentMedications: String,
+    bloodGroup: String,
+    genotype: String,
     
     
     specialization: String,

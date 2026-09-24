@@ -130,7 +130,9 @@ const getAppointments = async (req, res) => {
                     emergencyContactRelation: pd.emergencyContactRelation || 'N/A',
                     allergies: pd.allergies || 'None',
                     chronicConditions: pd.chronicConditions || 'None',
-                    currentMedications: pd.currentMedications || 'None'
+                    currentMedications: pd.currentMedications || 'None',
+                    bloodGroup: pd.bloodGroup || 'Unknown',
+                    genotype: pd.genotype || 'Unknown'
                 };
                 delete formatted.patientId; 
                 return formatted;

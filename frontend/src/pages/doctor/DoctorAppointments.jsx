@@ -86,6 +86,10 @@ const DoctorAppointments = () => {
                                                             <p><strong>Reason for Visit:</strong> ${a.reason || 'Not specified'}</p>
                                                             <hr style="margin: 10px 0; border: 1px solid #eee;" />
                                                             <h4 style="margin-bottom: 5px;">Medical Background</h4>
+                                                            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                                                                <p style="margin: 0;"><strong>Blood Group:</strong> ${a.bloodGroup}</p>
+                                                                <p style="margin: 0;"><strong>Genotype:</strong> ${a.genotype}</p>
+                                                            </div>
                                                             <p><strong>Allergies:</strong> ${a.allergies}</p>
                                                             <p><strong>Conditions:</strong> ${a.chronicConditions}</p>
                                                             <p><strong>Medications:</strong> ${a.currentMedications}</p>

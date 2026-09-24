@@ -40,6 +40,8 @@ const registerPatient = async (req, res) => {
             allergies: value.allergies || '',
             chronicConditions: value.chronicConditions || '',
             currentMedications: value.currentMedications || '',
+            bloodGroup: value.bloodGroup || '',
+            genotype: value.genotype || '',
             passwordHash: passwordHash
         };
 
@@ -105,16 +107,26 @@ const updateProfile = async (req, res) => {
         }
 
         const updates = {};
-        if (value.name) updates.name = value.name;
-        if (value.phone) updates.phone = value.phone;
+        const allowedFields = [
+            'name', 'phone', 'dob', 'gender', 
+            'emergencyContactName', 'emergencyContactPhone', 'emergencyContactRelation',
+            'allergies', 'chronicConditions', 'currentMedications', 'bloodGroup', 'genotype'
+        ];
+
+        allowedFields.forEach(field => {
+            if (value[field] !== undefined) {
+                updates[field] = value[field];
+            }
+        });
         
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ error: 'No valid fields provided for update' });
         }
 
         const updatedUser = await User.findByIdAndUpdate(req.user.uid, updates, { new: true });
+        const safeUser = { ...updatedUser.toJSON(), uid: updatedUser._id };
 
-        res.status(200).json({ message: 'Profile updated successfully', updates });
+        res.status(200).json({ message: 'Profile updated successfully', user: safeUser });
     } catch (error) {
         console.error('Profile update error:', error);
         res.status(500).json({ error: 'Internal server error' });
