@@ -28,10 +28,9 @@ const doctorSchema = Joi.object({
   }), // temporary password provided by admin
   departmentId: Joi.string().required(),
   specialty: Joi.string().required(),
-  qualifications: Joi.string().required(),
-  experienceYears: Joi.number().min(0).required(),
+  qualifications: Joi.string().allow('').optional(),
+  experienceYears: Joi.number().min(0).optional(),
   bio: Joi.string().allow('').optional(),
-  consultationFee: Joi.number().min(0).required(),
   slotDurationMinutes: Joi.number().valid(15, 20, 30, 45, 60).required()
 });
 
@@ -70,7 +69,6 @@ const doctorUpdateSchema = Joi.object({
   phone: Joi.string().optional(),
   departmentId: Joi.string().optional(),
   specialty: Joi.string().optional(),
-  consultationFee: Joi.number().min(0).optional(),
   slotDurationMinutes: Joi.number().valid(15, 20, 30, 45, 60).optional(),
   isActive: Joi.boolean().optional(),
   password: Joi.string().min(8).pattern(/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/\\|`~]).*$/).optional().messages({
